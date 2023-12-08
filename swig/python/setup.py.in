@@ -14,7 +14,6 @@ from pathlib import Path
 
 from setuptools.command.build_ext import build_ext
 from setuptools import setup
-from setuptools import find_packages
 from setuptools import Extension
 
 version = '@GDAL_PYTHON_VERSION@'
@@ -296,7 +295,7 @@ class gdal_ext(build_ext):
         build_ext.finalize_options(self)
 
         if numpy_include_dir != '.':
-	        self.include_dirs.append(self.numpy_include_dir)
+            self.include_dirs.append(self.numpy_include_dir)
 
         if self.get_compiler() == 'msvc':
             return
@@ -366,39 +365,9 @@ if HAVE_NUMPY:
     ext_modules.append(array_module)
 
 utils_package_root = 'gdal-utils'   # path for gdal-utils sources
-packages = find_packages(utils_package_root)
-packages = ['osgeo'] + packages
-package_dir = {'osgeo': 'osgeo', '': utils_package_root}
-
-readme = open('README.rst', encoding="utf-8").read()
-
-name = 'GDAL'
-author = "Frank Warmerdam"
-author_email = "warmerdam@pobox.com"
-maintainer = "GDAL contributors"
-maintainer_email = "gdal-dev@lists.osgeo.org"
-description = "GDAL: Geospatial Data Abstraction Library"
-license_type = "MIT"
-url = "http://www.gdal.org"
-
-classifiers = [
-    'Development Status :: 5 - Production/Stable',
-    'Intended Audience :: Developers',
-    'Intended Audience :: Science/Research',
-    'License :: OSI Approved :: MIT License',
-    'Operating System :: OS Independent',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: C',
-    'Programming Language :: C++',
-    'Topic :: Scientific/Engineering :: GIS',
-    'Topic :: Scientific/Engineering :: Information Analysis',
-
-]
-
-exclude_package_data = {'': ['CMakeLists.txt']}
 
 scripts = sorted([x for x in filter(lambda x: not '__init__.py' in x,
-                 glob("gdal-utils/osgeo_utils/*.py"))], reverse=True)  # command line scripts
+                 glob(utils_package_root + "/osgeo_utils/*.py"))], reverse=True)  # command line scripts
 
 def define_entry_points(scripts, entry_points=None):
     """
@@ -418,27 +387,9 @@ def define_entry_points(scripts, entry_points=None):
     return entry_points
 
 setup(
-    name=name,
     version=version,
-    author=author,
-    author_email=author_email,
-    maintainer=maintainer,
-    maintainer_email=maintainer_email,
-    long_description=readme,
-    long_description_content_type='text/x-rst',
-    description=description,
-    license=license_type,
-    classifiers=classifiers,
-    packages=packages,
-    package_dir=package_dir,
-    url=url,
-    python_requires='>=3.8.0',
     ext_modules=ext_modules,
     scripts=glob(utils_package_root + '/scripts/*.py'),
-    # This must *not* be conditionalized by HAVE_NUMPY, since this is for a "pip install gdal[numpy]" type of installation
-    extras_require={'numpy': ['numpy > 1.0.0']},
-    zip_safe=False,
     cmdclass=dict(build_ext=gdal_ext),
-    exclude_package_data = exclude_package_data,
     entry_points=define_entry_points(scripts),
 )
